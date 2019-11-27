@@ -394,6 +394,8 @@ export class SchemaBuilder {
           {} as Record<string, any>,
         )
       : undefined
+
+    console.log(args.data)
     return contextArgs
       ? { ...args, data: { ...contextArgs, ...args.data } }
       : args
