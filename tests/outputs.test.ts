@@ -74,6 +74,59 @@ it('can get args from context', async () => {
   expect(result).toMatchSnapshot('contextArgs')
 })
 
+it('can filter context args recursively', async () => {
+  const datamodel = `
+  model User {
+    id  Int @id
+    name String
+    browser String
+    nested Nested
+  }
+
+  model Nested {
+    id Int @id
+    browser String
+  }
+`
+  const Query = Nexus.objectType({
+    name: 'Query',
+    definition(t: any) {
+      t.crud.user()
+    },
+  })
+
+  const Mutation = Nexus.objectType({
+    name: 'Mutation',
+    definition(t: any) {
+      t.crud.createOneUser()
+    },
+  })
+
+  const User = Nexus.objectType({
+    name: 'User',
+    definition: (t: any) => {
+      t.model.id()
+      t.model.name()
+      t.model.nested()
+    },
+  })
+
+  const Nested = Nexus.objectType({
+    name: 'Nested',
+    definition: (t: any) => {
+      t.model.id()
+    },
+  })
+
+  const result = await generateSchemaAndTypesWithoutThrowing(datamodel, [
+    Query,
+    Mutation,
+    User,
+    Nested,
+  ])
+  expect(result).toMatchSnapshot('recursiveContextArgs')
+})
+
 it('publishes scalars from input types', async () => {
   const datamodel = `
   model User {
