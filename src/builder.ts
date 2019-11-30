@@ -462,6 +462,7 @@ export class SchemaBuilder {
     })
   }
 
+  // TODO: Change strategy to universal context args
   createFilteredType(inputType: DMMF.Data.InputType, contextArgs: ContextArgs) {
     const fields = inputType.fields.filter(
       field => !(field.name in contextArgs),
@@ -471,6 +472,7 @@ export class SchemaBuilder {
         // If the type is user-defined
         if (!GraphQL.scalarsNameValues.includes(field.inputType.type as any)) {
           // TODO: Args created like this need to be returned from buildArgs to be included?
+          // TODO: Change strategy to universal context args
           this.createInputType(field, contextArgs)
         }
       })
