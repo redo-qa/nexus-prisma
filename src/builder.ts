@@ -452,22 +452,31 @@ export class SchemaBuilder {
     )
   }
 
-  filterContextArgs(
-    { arg, type }: CustomInputArg,
-    publisherConfig: ResolvedFieldPublisherConfig,
-  ) {
-    if (!publisherConfig.contextArgs) {
-      return { arg, type }
+  createInputType(arg: DMMF.Data.SchemaArg, contextArgs: ContextArgs) {
+    return this.publisher.inputType(
+      contextArgs ? this.filterContextArgs(arg, contextArgs) : arg,
+    )
+  }
+
+  filterContextArgs(arg: DMMF.Data.SchemaArg, contextArgs: ContextArgs) {
+    const inputType = this.dmmf.getInputType(arg.inputType.type)
+    const fields = inputType.fields.filter(
+      field => !(field.name in contextArgs),
+    )
+    if (true) {
+      fields.forEach(field => {
+        // If the type is user-defined
+        if (this.dmmf.getInputType(field.inputType.type)) {
+          this.createInputType(field, contextArgs)
+        }
+      })
     }
-    const photonObject = this.dmmf.getInputType(arg.inputType.type)
     return {
       arg,
       type: {
-        ...photonObject,
-        name: arg.inputType.type,
-        fields: photonObject.fields.filter(
-          field => !(field.name in publisherConfig.contextArgs!),
-        ),
+        ...inputType,
+        name: `${inputType.name}Without${contextArgs.join('')}`,
+        fields,
       },
     }
   }

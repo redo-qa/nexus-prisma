@@ -98,7 +98,9 @@ it('can filter context args recursively', async () => {
   const Mutation = Nexus.objectType({
     name: 'Mutation',
     definition(t: any) {
-      t.crud.createOneUser()
+      t.crud.createOneUser({
+        contextArgs: { browser: (ctx: any) => ctx.browser },
+      })
     },
   })
 
@@ -108,6 +110,7 @@ it('can filter context args recursively', async () => {
       t.model.id()
       t.model.name()
       t.model.nested()
+      t.model.browser()
     },
   })
 
@@ -115,6 +118,7 @@ it('can filter context args recursively', async () => {
     name: 'Nested',
     definition: (t: any) => {
       t.model.id()
+      t.model.browser()
     },
   })
 
