@@ -59,12 +59,12 @@ const dmmfListFieldTypeToNexus = (
 ) => {
   return fieldType.isList
     ? {
-        list: [true],
-        nullable: false,
-      }
+      list: [true],
+      nullable: false,
+    }
     : {
-        nullable: !fieldType.isRequired,
-      }
+      nullable: !fieldType.isRequired,
+    }
 }
 
 type PhotonFetcher = (ctx: Nexus.core.GetGen<'context'>) => any
@@ -150,8 +150,8 @@ const shouldGenerateArtifacts =
   process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'true'
     ? true
     : process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'false'
-    ? false
-    : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
+      ? false
+      : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
 
 const defaultOptions = {
   shouldGenerateArtifacts,
@@ -346,14 +346,14 @@ export class SchemaBuilder {
             resolve:
               field.outputType.kind === 'object'
                 ? (root, args, ctx) => {
-                    const photon = this.getPhoton(ctx)
-                    const mapping = this.dmmf.getMapping(typeName)
-                    return photon[mapping.plural!]
-                      ['findOne']({ where: { id: root.id } })
-                      [field.name](
-                        this.withContextArgs(publisherConfig, args, ctx),
-                      )
-                  }
+                  const photon = this.getPhoton(ctx)
+                  const mapping = this.dmmf.getMapping(typeName)
+                  return photon[mapping.plural!]
+                  ['findOne']({ where: { id: root.id } })
+                  [field.name](
+                    this.withContextArgs(publisherConfig, args, ctx),
+                  )
+                }
                 : undefined,
           })
 
@@ -378,12 +378,12 @@ export class SchemaBuilder {
   ) {
     const contextArgs = publisherConfig.contextArgs
       ? Object.keys(publisherConfig.contextArgs).reduce(
-          (args, key) => {
-            args[key] = publisherConfig.contextArgs![key](ctx)
-            return args
-          },
-          {} as Record<string, any>,
-        )
+        (args, key) => {
+          args[key] = publisherConfig.contextArgs![key](ctx)
+          return args
+        },
+        {} as Record<string, any>,
+      )
       : undefined
     return contextArgs
       ? { ...args, data: { ...contextArgs, ...args.data } }
@@ -444,40 +444,41 @@ export class SchemaBuilder {
     return args.reduce<Nexus.core.ArgsRecord>(
       (acc, customArg) => ({
         ...acc,
-        [customArg.arg.name]: this.publisher.inputType(
-          this.filterContextArgs(customArg, publisherConfig),
-        ) as any, //FIX ME,
-      }),
+        [customArg.arg.name]: this.createInputType(customArg.arg, publisherConfig.contextArgs)
+      } as Nexus.core.ArgsRecord),
       {},
     )
   }
 
-  createInputType(arg: DMMF.Data.SchemaArg, contextArgs: ContextArgs) {
-    return this.publisher.inputType(
-      contextArgs ? this.filterContextArgs(arg, contextArgs) : arg,
-    )
+  createInputType(arg: DMMF.Data.SchemaArg, contextArgs?: ContextArgs) {
+    const inputType = this.dmmf.getInputType(arg.inputType.type)
+    return this.publisher.inputType({
+      arg,
+      type: contextArgs ? this.createFilteredType(inputType, contextArgs) : {
+        ...inputType,
+        name: arg.inputType.type,
+        fields: inputType.fields
+      }
+    })
   }
 
-  filterContextArgs(arg: DMMF.Data.SchemaArg, contextArgs: ContextArgs) {
-    const inputType = this.dmmf.getInputType(arg.inputType.type)
+  createFilteredType(inputType: DMMF.Data.InputType, contextArgs: ContextArgs) {
     const fields = inputType.fields.filter(
       field => !(field.name in contextArgs),
     )
     if (true) {
       fields.forEach(field => {
         // If the type is user-defined
-        if (this.dmmf.getInputType(field.inputType.type)) {
+        if (!GraphQL.scalarsNameValues.includes(field.inputType.type as any)) {
+          // TODO: Args created like this need to be returned from buildArgs to be included?
           this.createInputType(field, contextArgs)
         }
       })
     }
     return {
-      arg,
-      type: {
-        ...inputType,
-        name: `${inputType.name}Without${contextArgs.join('')}`,
-        fields,
-      },
+      ...inputType,
+      name: `${inputType.name}Without${Object.keys(contextArgs).map(arg => `${arg.charAt(0).toUpperCase()}${arg.slice(1)}`).join('')}`,
+      fields,
     }
   }
 
@@ -541,8 +542,8 @@ export class SchemaBuilder {
         publisherConfig.pagination === true
           ? dmmfField.args.filter(a => paginationKeys.includes(a.name))
           : dmmfField.args.filter(
-              arg => (publisherConfig.pagination as any)[arg.name] === true,
-            )
+            arg => (publisherConfig.pagination as any)[arg.name] === true,
+          )
 
       args.push(
         ...paginationsArgs.map(a => ({
