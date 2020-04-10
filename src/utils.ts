@@ -170,26 +170,32 @@ export type Index<T> = Record<string, T>
  * A function that takes an object representing the request's input
  * (args, context, and info) and returns the value to pass to the Prisma JS Client.
  */
-export type ComputeInput<
-  MethodName extends MutationMethodName = MutationMethodName
-> = (params: MutationResolverParams<MethodName>) => unknown
+export type ComputeInput<MethodName extends ResolverName = ResolverName> = (
+  params: ResolverParams<MethodName>,
+) => unknown
 
-export type MutationType = core.GetGen<'argTypes'>['Mutation']
+export type ResolverType = core.GetGen<'argTypes'>['Mutation'] &
+  core.GetGen<'argTypes'>['Query']
 
-export type MutationResolverParams<
-  MethodName extends MutationMethodName = MutationMethodName
-> = {
+export type ResolverArgs<
+  MethodName extends ResolverName = ResolverName
+> = ResolverType[MethodName] extends unknown
+  ? Record<string, any>
+  : ResolverType[MethodName]
+
+export type ResolverParams<MethodName extends ResolverName = ResolverName> = {
   info: GraphQLResolveInfo
   ctx: Context
-  args:
-    | (MutationType[MethodName] extends unknown
-        ? Record<string, any>
-        : MutationType[MethodName])
-    | undefined
+  args: ResolverArgs<MethodName> | undefined
 }
 
-export type MutationMethodName = Extract<
-  keyof core.GetGen<'argTypes'>['Mutation'],
+export type PreResolver<MethodName extends ResolverName = ResolverName> = (
+  args: ResolverParams<MethodName>,
+) => Promise<ResolverArgs<MethodName>>
+
+export type ResolverName = Extract<
+  | keyof core.GetGen<'argTypes'>['Mutation']
+  | keyof core.GetGen<'argTypes'>['Query'],
   string
 >
 
@@ -209,7 +215,7 @@ export type StandardInputConfig = {
 }
 
 export type ComputedInputConfig<
-  MethodName extends MutationMethodName = MutationMethodName
+  MethodName extends ResolverName = ResolverName
 > = {
   collapseTo?: null
   computeFrom: ComputeInput<MethodName>
@@ -217,16 +223,12 @@ export type ComputedInputConfig<
 
 export type InputConfig = StandardInputConfig | ComputedInputConfig
 
-export type InputsConfig<
-  MethodName extends MutationMethodName = MutationMethodName
-> = {
+export type InputsConfig<MethodName extends ResolverName = ResolverName> = {
   [Name in PrismaInputFieldName]?:
     | StandardInputConfig
     | ComputedInputConfig<MethodName>
 }
 
-export type ComputedFields<
-  MethodName extends MutationMethodName = MutationMethodName
-> = {
+export type ComputedFields<MethodName extends ResolverName = ResolverName> = {
   [Name in PrismaInputFieldName]?: ComputeInput<MethodName>
 }

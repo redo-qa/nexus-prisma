@@ -35,6 +35,7 @@ import {
   InputConfig,
   PrismaInputFieldName,
   CollapseToValue,
+  PreResolver,
 } from './utils'
 import { NexusInputObjectTypeDef } from '@nexus/schema/dist/core'
 import {
@@ -54,6 +55,7 @@ type FieldPublisherConfig = {
   ordering?: boolean | Record<string, boolean>
   inputs?: InputsConfig
   collapseTo?: CollapseToValue
+  preResolve?: PreResolver
 }
 
 // Config options that are populated with defaults will not be undefined
@@ -290,9 +292,9 @@ export class SchemaBuilder {
                 publisherConfig,
                 typeName,
                 operation: mappedField.operation,
-                resolve: (root, args, ctx, info) => {
+                resolve: async (root, args, ctx, info) => {
                   const photon = this.getPhoton(ctx)
-                  const transformedArgs = transformArgs({
+                  let transformedArgs = transformArgs({
                     argTypes:
                       this.publisher.getField(mappedField.field.name)?.args ??
                       [],
@@ -305,6 +307,13 @@ export class SchemaBuilder {
                     inputs: publisherConfig.inputs,
                     collapseTo: publisherConfig.collapseTo,
                   })
+                  if (publisherConfig.preResolve) {
+                    transformedArgs = await publisherConfig.preResolve({
+                      args: transformedArgs,
+                      ctx,
+                      info,
+                    })
+                  }
                   return photon[mappedField.photonAccessor][
                     mappedField.operation
                   ](transformedArgs)

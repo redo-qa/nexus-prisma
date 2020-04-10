@@ -1,6 +1,6 @@
 import { transform, isEmpty } from '@re-do/utils'
 import {
-  MutationResolverParams,
+  ResolverParams,
   InputsConfig,
   CollapseToValue,
   ComputeInput,
@@ -13,7 +13,7 @@ import { Publisher } from './publisher'
 type ShallowTransformDataParams = {
   computedFields: ComputedFields
   collapsedTo: CollapseToValue
-  resolverParams: MutationResolverParams
+  resolverParams: ResolverParams
   data: unknown
 }
 
@@ -107,7 +107,7 @@ export const isTransformRequired = (
 
 type TransformArgsParams = {
   argTypes: DmmfTypes.SchemaArg[]
-  params: MutationResolverParams
+  params: ResolverParams
   publisher: Publisher
   inputs: InputsConfig
   collapseTo: CollapseToValue
