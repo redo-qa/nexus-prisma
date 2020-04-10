@@ -3083,3 +3083,4 @@ yarn && yarn link nexus-prisma
 - [Examples](https://github.com/prisma-labs/nexus-examples)
 - [Nexus](https://nexus.js.org)
 - [Prisma](https://prisma.io)
+  [Docs](https://www.nexusjs.org/#/components/schema/plugins/prisma)
